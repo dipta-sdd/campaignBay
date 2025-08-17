@@ -267,7 +267,7 @@ if(! function_exists('wpab_cb_log')) {
 			return;
 		}
 		$upload_dir = wp_upload_dir();
-		$log_dir = $upload_dir['basedir'] . '/'. WPAB_CB_TEXT_DOMAIN .'-logs/';
+		$log_dir = $upload_dir['basedir'] . '/'. WPAB_CB_TEXT_DOMAIN .'/';
 		
 		if ( ! is_dir( $log_dir ) ) {
 			wp_mkdir_p( $log_dir );

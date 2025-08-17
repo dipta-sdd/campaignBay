@@ -102,7 +102,6 @@ class PricingEngine {
 
 		$default_priority = wpab_cb_get_options('global_defaultPriority') ?? 10;
 
-		// Product hooks for displaying discounts on single product pages.
 		/**
 		 * load the product summary hook
 		 * priority 9 is the last hook before the price html hook
@@ -145,6 +144,7 @@ class PricingEngine {
 
 		// save the discount breakdown to the order meta
 		$this->add_action( 'woocommerce_checkout_create_order', 'save_discount_breakdown_to_order_meta', $default_priority, 2 );
+		$this->add_action( 'woocommerce_store_api_checkout_update_order_meta', 'save_discount_breakdown_to_order_meta', $default_priority, 1 );
 
 		// prevent coupon stacking
 		if( ! wpab_cb_get_options('cart_allowWcCouponStacking') ){
@@ -182,17 +182,19 @@ class PricingEngine {
     }
 
 
-	public function save_discount_breakdown_to_order_meta( $order, $data ) {
-        // The cart object is available globally via WC()->cart at this point.
-        if ( WC()->cart && ! empty( WC()->cart->wpab_cb_discount_breakdown ) ) {
-            // Get the breakdown array we created in the previous hook.
-            $breakdown = WC()->cart->wpab_cb_discount_breakdown;
+	public function save_discount_breakdown_to_order_meta( $order, $data= null ) {
+		// The cart object is available globally via WC()->cart at this point.
+		$cart = WC()->cart;
 
-            // Save the entire breakdown array to a single meta key on the order.
-            // The preceding underscore `_` makes it a hidden meta field by default.
-            $order->update_meta_data( '_wpab_cb_discount_breakdown', $breakdown );
-        }
-    }
+		if ( $cart && ! empty( $cart->wpab_cb_discount_breakdown ) ) {
+			// Get the breakdown array we created in the previous hook.
+			$breakdown = $cart->wpab_cb_discount_breakdown;
+
+			// Save the entire breakdown array to a single meta key on the order.
+			$order->update_meta_data( '_wpab_cb_discount_breakdown', $breakdown );
+			wpab_cb_log( sprintf( 'Saved discount breakdown to order #%d (Classic Checkout).', $order->get_id() ), 'INFO' );
+		}
+	}
 
 
 	/**
@@ -632,6 +634,9 @@ class PricingEngine {
 	 * @return bool The modified is on sale value.
 	 */
 	public function filter_is_product_on_sale( $is_on_sale, $product ) {
+		if( ! wpab_cb_get_options('product_showDiscountedPrice') ) {
+			return $is_on_sale;
+		}
 		// Get the discount data for the product.
 		$discount_data = $this->get_or_calculate_product_discount( $product );
 		// If the campaign is active, return true.
@@ -1053,7 +1058,7 @@ class PricingEngine {
 			wpab_cb_log('product_discount_cache: ' . $product_id . ' ' . $product->get_name(), 'DEBUG' );
 			wpab_cb_log('base_price: ' . $discount_data['base_price'], 'DEBUG' );
 			wpab_cb_log('best_price: ' . $discount_data['discounts']['best_price'] ?? 'null', 'DEBUG' );
-			wpab_cb_log('on_price: ' . $product->get_price(), 'DEBUG' );
+			wpab_cb_log('price: ' . $product->get_price(), 'DEBUG' );
 			wpab_cb_log('on_sale: ' . $discount_data['on_sale'], 'DEBUG' );
 			wpab_cb_log('on_campaign: ' . $discount_data['on_campaign'], 'DEBUG' );
 			if( isset( $discount_data['discounts']['best_price'] ) ){

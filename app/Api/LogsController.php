@@ -90,7 +90,7 @@ class LogsController extends ApiController {
 	 */
 	public function get_log_file_contents( $request ) {
 		$upload_dir = wp_upload_dir();
-		$log_dir    = $upload_dir['basedir'] . '/' . WPAB_CB_TEXT_DOMAIN . '-logs/';
+		$log_dir    = $upload_dir['basedir'] . '/' . WPAB_CB_TEXT_DOMAIN . '/';
 		$log_file   = $log_dir . 'plugin-log-' . gmdate( 'Y-m-d' ) . '.log';
 
 		if ( file_exists( $log_file ) ) {
@@ -123,7 +123,7 @@ class LogsController extends ApiController {
 
     public function delete_log_files( $request ) {
         $upload_dir = wp_upload_dir();
-        $log_dir    = $upload_dir['basedir'] . '/' . WPAB_CB_TEXT_DOMAIN . '-logs/';
+        $log_dir    = $upload_dir['basedir'] . '/' . WPAB_CB_TEXT_DOMAIN . '/';
 
         if ( ! is_dir( $log_dir ) ) {
             // If the directory doesn't exist, there's nothing to clear.

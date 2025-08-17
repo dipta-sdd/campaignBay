@@ -131,7 +131,7 @@ class Campaign {
 	 * @since 1.0.0
 	 * @access private
 	 */
-	private function load_usage_count() {
+	public function load_usage_count() {
 		wpab_cb_log('load_usage_count for campaign: ' . $this->get_id(), 'DEBUG' );
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'wpab_cb_logs';
