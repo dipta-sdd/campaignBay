@@ -1,4 +1,6 @@
-@import "@wordpress/dataviews/build-style/style.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 .toplevel_page_campaignbay #wpcontent {
   padding-left: 0;
@@ -199,7 +201,7 @@
     "sm": 4px,
     "md": 8px,
     "lg": 16px,
-    "full": 9999px // For creating circles or pills,,,,
+    "full": 9999px // For creating circles or pills,,,,,
   );
 
   @each $name, $value in $border-radii {
