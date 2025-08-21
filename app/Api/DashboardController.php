@@ -94,7 +94,7 @@ class DashboardController extends ApiController {
 	 */
 	private function get_kpi_data( $current_start, $current_end, $previous_start, $previous_end ) {
 		global $wpdb;
-		$logs_table = $wpdb->prefix . 'wpab_cb_logs';
+		$logs_table = $wpdb->prefix . 'campaignbay_logs';
 		$success_statuses = "'processing', 'completed'";
 
 		// --- Get Current Period Data ---
@@ -128,8 +128,8 @@ class DashboardController extends ApiController {
 
 		// --- Get Active Campaign Count ---
 		$active_campaigns_query = new WP_Query( array(
-			'post_type'      => 'wpab_cb_campaign',
-			'post_status'    => 'wpab_cb_active',
+			'post_type'      => 'campaignbay_campaign',
+			'post_status'    => 'cb_scheduled',
 			'posts_per_page' => -1,
 			'fields'         => 'ids',
 		) );
@@ -162,7 +162,7 @@ class DashboardController extends ApiController {
 	 */
 	private function get_chart_data( $start_date, $end_date ) {
 		global $wpdb;
-		$logs_table = $wpdb->prefix . 'wpab_cb_logs';
+		$logs_table = $wpdb->prefix . 'campaignbay_logs';
 		$success_statuses = "'processing', 'completed'";
 
 		// --- FIX: Discount Trends (Line Chart) ---
@@ -213,14 +213,14 @@ class DashboardController extends ApiController {
 	 */
 	private function get_most_impactful_types( $start_date, $end_date ) {
 		global $wpdb;
-		$logs_table       = $wpdb->prefix . 'wpab_cb_logs';
+		$logs_table       = $wpdb->prefix . 'campaignbay_logs';
 		$meta_table       = $wpdb->prefix . 'postmeta';
 		$success_statuses = "'processing', 'completed'";
 
 		$sql = $wpdb->prepare(
 			"SELECT pm.meta_value as campaign_type, SUM(l.order_total) as total_sales
 			 FROM {$logs_table} l
-			 JOIN {$meta_table} pm ON l.campaign_id = pm.post_id AND pm.meta_key = '_wpab_cb_campaign_type'
+			 JOIN {$meta_table} pm ON l.campaign_id = pm.post_id AND pm.meta_key = '_campaignbay_campaign_type'
 			 WHERE l.log_type = 'sale' AND l.order_status IN ('processing', 'completed')
 			 AND l.timestamp BETWEEN %s AND %s
 			 GROUP BY pm.meta_value
@@ -241,11 +241,11 @@ class DashboardController extends ApiController {
 		// --- Get currently active campaigns (ordered by which one will expire first) ---
 		$active_query = new WP_Query(
 			array(
-				'post_type'      => 'wpab_cb_campaign',
-				'post_status'    => 'wpab_cb_active',
+				'post_type'      => 'campaignbay_campaign',
+				'post_status'    => 'cb_scheduled',
 				'posts_per_page' => 5,
 				'orderby'        => 'meta_value',
-				'meta_key'       => '_wpab_cb_end_datetime', // Note the underscore for querying meta
+				'meta_key'       => '_campaignbay_end_datetime', // Note the underscore for querying meta
 				'order'          => 'ASC',
 			)
 		);
@@ -267,11 +267,11 @@ class DashboardController extends ApiController {
 		// --- Get upcoming scheduled campaigns (ordered by which one will start first) ---
 		$scheduled_query = new WP_Query(
 			array(
-				'post_type'      => 'wpab_cb_campaign',
-				'post_status'    => 'wpab_cb_scheduled',
+				'post_type'      => 'campaignbay_campaign',
+				'post_status'    => 'cb_scheduled',
 				'posts_per_page' => 5,
 				'orderby'        => 'meta_value',
-				'meta_key'       => '_wpab_cb_start_datetime', // Note the underscore
+				'meta_key'       => '_campaignbay_start_datetime', // Note the underscore
 				'order'          => 'ASC',
 			)
 		);
@@ -303,7 +303,7 @@ class DashboardController extends ApiController {
 	 */
 	private function get_recent_activity() {
 		global $wpdb;
-		$table_name = $wpdb->prefix . 'wpab_cb_logs';
+		$table_name = $wpdb->prefix . 'campaignbay_logs';
 		
 		$results = $wpdb->get_results(
 			$wpdb->prepare(

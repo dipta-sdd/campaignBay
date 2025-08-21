@@ -21,7 +21,7 @@ const CampaignsAdd = () => {
   const { woocommerce_currency_symbol } = useCbStore();
   const navigate = useNavigate();
   const [campaignType, setCampaignType] = useState("scheduled");
-  const [campaignStatus, setCampaignStatus] = useState("wpab_cb_scheduled");
+  const [campaignStatus, setCampaignStatus] = useState("cb_scheduled");
   const [campaignTitle, setCampaignTitle] = useState("");
   const [selectionType, setSelectionType] = useState("entire_store");
   const [selections, setSelections] = useState([]);
@@ -135,7 +135,7 @@ const CampaignsAdd = () => {
   const handleCampaignTypeChange = (value) => {
     setCampaignType(value);
     if (value === "scheduled") {
-      setCampaignStatus("wpab_cb_scheduled");
+      setCampaignStatus("cb_scheduled");
     }
   };
 
@@ -199,14 +199,14 @@ const CampaignsAdd = () => {
       }
     }
     if (
-      campaignData.campaign_status === "wpab_cb_scheduled" &&
+      campaignData.campaign_status === "cb_scheduled" &&
       !campaignData?.start_datetime
     ) {
       setErrors({ start_datetime: "Start datetime is required" });
       return;
     }
     if (
-      campaignData.campaign_status === "wpab_cb_scheduled" &&
+      campaignData.campaign_status === "cb_scheduled" &&
       !campaignData?.end_datetime
     ) {
       setErrors({ end_datetime: "End datetime is required" });
@@ -285,13 +285,11 @@ const CampaignsAdd = () => {
             value={campaignStatus}
             onChange={(e) => handleCampaignStatusChange(e.target.value)}
           >
-            <option value="wpab_cb_active">
-              {__("Active", "campaignbay")}
-            </option>
-            <option value="wpab_cb_inactive">
+            <option value="cb_scheduled">{__("Active", "campaignbay")}</option>
+            <option value="campaignbay_inactive">
               {__("Inactive", "campaignbay")}
             </option>
-            <option value="wpab_cb_scheduled">
+            <option value="cb_scheduled">
               {__("Scheduled", "campaignbay")}
             </option>
           </select>
@@ -436,7 +434,7 @@ const CampaignsAdd = () => {
             </div>
           </div>
         )}
-        {campaignStatus === "wpab_cb_scheduled" && (
+        {campaignStatus === "cb_scheduled" && (
           <div className="cb-form-input-con">
             <label htmlFor="start-time">
               {__("SELECT CAMPAIGN DURATION", "campaignbay")} <Required />{" "}

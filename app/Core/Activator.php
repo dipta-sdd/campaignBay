@@ -64,8 +64,8 @@ class Activator {
 			);
 		}
 		// Set up the default options if they don't exist.
-		if ( ! get_option( WPAB_CB_OPTION_NAME ) ) {
-			wpab_cb_update_options( wpab_cb_default_options() );
+		if ( ! get_option( CAMPAIGNBAY_OPTION_NAME ) ) {
+			campaignbay_update_options( campaignbay_default_options() );
 		}
 
 		// Create custom database tables.
@@ -96,7 +96,7 @@ class Activator {
 	 */
 	private static function secure_log_directory() {
 		$upload_dir = wp_upload_dir();
-		$log_dir    = $upload_dir['basedir'] . '/' . WPAB_CB_TEXT_DOMAIN . '-logs/';
+		$log_dir    = $upload_dir['basedir'] . '/' . CAMPAIGNBAY_TEXT_DOMAIN . '-logs/';
 
 		if ( ! is_dir( $log_dir ) ) {
 			wp_mkdir_p( $log_dir );

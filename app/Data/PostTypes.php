@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * The custom post type and status definition class.
  *
- * This is used to register the `wpab_cb_campaign` post type and the custom statuses
+ * This is used to register the `campaignbay_campaign` post type and the custom statuses
  * like 'Active', 'Scheduled', and 'Expired'. The post type itself has no visible UI in the admin,
  * as it is managed entirely by a React application via the REST API.
  *
@@ -85,7 +85,7 @@ class PostTypes {
 	}
 
 	/**
-	 * Register the `wpab_cb_campaign` Custom Post Type.
+	 * Register the `campaignbay_campaign` Custom Post Type.
 	 *
 	 * This CPT is registered without a visible UI in the admin area. It serves as a
 	 * backend data store to be managed by the plugin's React interface via the REST API.
@@ -130,7 +130,7 @@ class PostTypes {
 			'rest_base'           => 'campaigns', // The endpoint will be /wp-json/campaignbay/v1/campaigns/
 			'rest_controller_class' => 'WP_REST_Posts_Controller',
 		);
-		register_post_type( 'wpab_cb_campaign', $args );
+		register_post_type( 'campaignbay_campaign', $args );
 	}
 
 	/**
@@ -142,7 +142,7 @@ class PostTypes {
 	 */
 	public function register_post_statuses() {
 		register_post_status(
-			'wpab_cb_active',
+			'campaignbay_active',
 			array(
 				'label'                     => _x( 'Active', 'post status', 'campaignbay' ),
 				'public'                    => true,
@@ -154,7 +154,7 @@ class PostTypes {
 		);
 
 		register_post_status(
-			'wpab_cb_scheduled',
+			'cb_scheduled',
 			array(
 				'label'                     => _x( 'Scheduled', 'post status', 'campaignbay' ),
 				'public'                    => true,
@@ -166,7 +166,7 @@ class PostTypes {
 		);
 
 		register_post_status(
-			'wpab_cb_expired',
+			'campaignbay_expired',
 			array(
 				'label'                     => _x( 'Expired', 'post status', 'campaignbay' ),
 				'public'                    => true,
@@ -177,7 +177,7 @@ class PostTypes {
 			)
 		);
 		register_post_status(
-			'wpab_cb_inactive',
+			'campaignbay_inactive',
 			array(
 				'label'                     => _x( 'Inactive', 'post status', 'campaignbay' ),
 				'public'                    => true,
@@ -192,19 +192,19 @@ class PostTypes {
 
 
 	/**
-	 * Register the meta fields for the `wpab_cb_campaign` post type.
+	 * Register the meta fields for the `campaignbay_campaign` post type.
 	 *
 	 * This makes them available in the REST API for the React UI.
 	 *
 	 * @since 1.0.0
 	 */
 	public function register_meta_fields() {
-		$meta_keys = wpab_cb_get_campaign_meta_keys(); 
+		$meta_keys = campaignbay_get_campaign_meta_keys(); 
 
 		foreach ( $meta_keys as $meta_key ) {
 			register_post_meta(
-				'wpab_cb_campaign',
-				'_wpab_cb_' . $meta_key, 
+				'campaignbay_campaign',
+				'_campaignbay_' . $meta_key, 
 				array(
 					'show_in_rest'  => true,
 					'single'        => true, 
@@ -218,8 +218,8 @@ class PostTypes {
 
 		// Special handling for the tiers array
 		register_post_meta(
-			'wpab_cb_campaign',
-			'_wpab_cb_campaign_tiers',
+			'campaignbay_campaign',
+			'_campaignbay_campaign_tiers',
 			array(
 				'show_in_rest'  => true,
 				'single'        => true,
@@ -244,20 +244,20 @@ class PostTypes {
 	 * @return array  The modified post states.
 	 */
 	public function add_display_post_states( $post_states, $post ) {
-		if ( ! is_admin() || $post->post_type !== 'wpab_cb_campaign' ) {
+		if ( ! is_admin() || $post->post_type !== 'campaignbay_campaign' ) {
 			return $post_states;
 		}
 
-		if ( 'wpab_cb_active' === $post->post_status ) {
-			$post_states['wpab_cb_active'] = __( 'Active', 'campaignbay' );
+		if ( 'campaignbay_active' === $post->post_status ) {
+			$post_states['campaignbay_active'] = __( 'Active', 'campaignbay' );
 		}
 
-		if ( 'wpab_cb_scheduled' === $post->post_status ) {
-			$post_states['wpab_cb_scheduled'] = __( 'Scheduled', 'campaignbay' );
+		if ( 'campaignbay_scheduled' === $post->post_status ) {
+			$post_states['campaignbay_scheduled'] = __( 'Scheduled', 'campaignbay' );
 		}
 
-		if ( 'wpab_cb_expired' === $post->post_status ) {
-			$post_states['wpab_cb_expired'] = __( 'Expired', 'campaignbay' );
+		if ( 'campaignbay_expired' === $post->post_status ) {
+			$post_states['campaignbay_expired'] = __( 'Expired', 'campaignbay' );
 		}
 
 		return $post_states;

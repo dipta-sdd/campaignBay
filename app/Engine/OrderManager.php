@@ -60,16 +60,16 @@ class OrderManager {
 	 * @param WC_Order $order       The order object.
 	 */
 	public function handle_order_status_change( $order_id, $old_status, $new_status, $order ) {
-		wpab_cb_log( sprintf( 'Order #%d status changed from "%s" to "%s". Handling event.', $order_id, $old_status, $new_status ), 'INFO' );
+		campaignbay_log( sprintf( 'Order #%d status changed from "%s" to "%s". Handling event.', $order_id, $old_status, $new_status ), 'INFO' );
 
 		// Get the discount breakdown we saved from the cart.
-		$discount_breakdown = $order->get_meta( '_wpab_cb_discount_breakdown', true );
+		$discount_breakdown = $order->get_meta( '_campaignbay_discount_breakdown', true );
 
 		if ( empty( $discount_breakdown ) || ! is_array( $discount_breakdown ) ) {
-			wpab_cb_log( sprintf( 'No campaign data found on order #%d. Aborting log.', $order_id ), 'DEBUG' );
+			campaignbay_log( sprintf( 'No campaign data found on order #%d. Aborting log.', $order_id ), 'DEBUG' );
 			return; // This order was not processed by our plugin.
 		}
-        do_action( 'wpab_cb_create_order');
+        do_action( 'campaignbay_create_order');
 		// Loop through the breakdown, which has one entry per campaign that was applied.
 		foreach ( $discount_breakdown as $campaign_id => $data ) {
 			$this->log_sale_event( $campaign_id, $order, $data, $new_status );
@@ -89,7 +89,7 @@ class OrderManager {
 	 */
 	private function log_sale_event( $campaign_id, $order, $data, $new_status ) {
 		global $wpdb;
-		$table_name = $wpdb->prefix . 'wpab_cb_logs';
+		$table_name = $wpdb->prefix . 'campaignbay_logs';
 		$order_id   = $order->get_id();
 
 		// Calculate the base total and the total discount for this specific campaign.
@@ -127,15 +127,15 @@ class OrderManager {
 		
 		if ( $existing_log_id ) {
 			// If it exists, UPDATE it with the new status and timestamp.
-			wpab_cb_log( sprintf( 'Updating existing log entry #%d for order #%d, campaign #%d. New status: %s', $existing_log_id, $order_id, $campaign_id, $new_status ), 'DEBUG' );
+			campaignbay_log( sprintf( 'Updating existing log entry #%d for order #%d, campaign #%d. New status: %s', $existing_log_id, $order_id, $campaign_id, $new_status ), 'DEBUG' );
 			$wpdb->update( $table_name, $log_data, array( 'log_id' => $existing_log_id ) );
 		} else {
 			// If it doesn't exist, INSERT a new record.
-			wpab_cb_log( sprintf( 'Creating new log entry for order #%d, campaign #%d. Status: %s', $order_id, $campaign_id, $new_status ), 'DEBUG' );
+			campaignbay_log( sprintf( 'Creating new log entry for order #%d, campaign #%d. Status: %s', $order_id, $campaign_id, $new_status ), 'DEBUG' );
 			$wpdb->insert( $table_name, $log_data );
 			$campaign = new Campaign( $campaign_id );
 			$campaign->load_usage_count();
-			wpab_cb_log('usage_count: ' . $campaign->get_usage_count(), 'DEBUG' );
+			campaignbay_log('usage_count: ' . $campaign->get_usage_count(), 'DEBUG' );
 			CampaignManager::get_instance()->clear_cache('order_manager');
 		}
 		
@@ -160,14 +160,14 @@ class OrderManager {
 	}
 }
 
-if ( ! function_exists( 'wpab_cb_order_manager' ) ) {
+if ( ! function_exists( 'campaignbay_order_manager' ) ) {
 	/**
 	 * Returns the single instance of the Order Manager class.
 	 *
 	 * @since 1.0.0
 	 * @return OrderManager
 	 */
-	function wpab_cb_order_manager() {
+	function campaignbay_order_manager() {
 		return OrderManager::get_instance();
 	}
 }

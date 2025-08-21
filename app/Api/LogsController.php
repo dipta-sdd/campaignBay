@@ -90,12 +90,12 @@ class LogsController extends ApiController {
 	 */
 	public function get_log_file_contents( $request ) {
 		$upload_dir = wp_upload_dir();
-		$log_dir    = $upload_dir['basedir'] . '/' . WPAB_CB_TEXT_DOMAIN . '-logs/';
+		$log_dir    = $upload_dir['basedir'] . '/' . CAMPAIGNBAY_TEXT_DOMAIN . '-logs/';
 		$log_file   = $log_dir . 'plugin-log-' . gmdate( 'Y-m-d' ) . '.log';
 
 		if ( file_exists( $log_file ) ) {
 			// Get the file system object.
-			$wp_filesystem = wpab_cb_file_system();
+			$wp_filesystem = campaignbay_file_system();
 			$contents      = $wp_filesystem->get_contents( $log_file );
 
 			if ( false === $contents ) {
@@ -123,14 +123,14 @@ class LogsController extends ApiController {
 
     public function delete_log_files( $request ) {
         $upload_dir = wp_upload_dir();
-        $log_dir    = $upload_dir['basedir'] . '/' . WPAB_CB_TEXT_DOMAIN . '-logs/';
+        $log_dir    = $upload_dir['basedir'] . '/' . CAMPAIGNBAY_TEXT_DOMAIN . '-logs/';
 
         if ( ! is_dir( $log_dir ) ) {
             // If the directory doesn't exist, there's nothing to clear.
             return new WP_REST_Response( array( 'message' => __( 'Log directory does not exist. Nothing to clear.', 'campaignbay' ) ), 200 );
         }
 
-        $wp_filesystem = wpab_cb_file_system();
+        $wp_filesystem = campaignbay_file_system();
         $files         = $wp_filesystem->dirlist( $log_dir );
         $deleted_count = 0;
 

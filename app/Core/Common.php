@@ -67,7 +67,7 @@ class Common {
 	public function get_settings( $key = '' ) {
 		static $cache = null;
 		if ( ! $cache ) {
-			$cache = wpab_cb_get_options();
+			$cache = campaignbay_get_options();
 		}
 		if ( ! empty( $key ) ) {
 			return isset( $cache[ $key ] ) ? $cache[ $key ] : false;
@@ -85,7 +85,7 @@ class Common {
 	public function get_white_label() {
 		static $cache = null;
 		if ( ! $cache ) {
-			$cache = wpab_cb_get_white_label();
+			$cache = campaignbay_get_white_label();
 		}
 
 		return $cache;

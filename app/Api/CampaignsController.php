@@ -191,7 +191,7 @@ class CampaignsController extends ApiController {
 	 */
 	public function get_items( $request ) {
 		$args = array(
-			'post_type'      => 'wpab_cb_campaign',
+			'post_type'      => 'campaignbay_campaign',
 			'posts_per_page' => $request->get_param( 'per_page' ) ?: 10,
 			'paged'          => $request->get_param( 'page' ) ?: 1,
 			's'              => $request->get_param( 'search' ) ?: '',
@@ -206,7 +206,7 @@ class CampaignsController extends ApiController {
 		if ( ! empty( $status ) && 'all' !== $status ) {
 			// Prepend the custom status prefix if it's not a built-in status
 			if ( ! in_array( $status, array( 'draft', 'publish', 'trash' ), true ) ) {
-				$args['post_status'] = 'wpab_cb_' . $status;
+				$args['post_status'] = 'campaignbay_' . $status;
 			} else {
 				$args['post_status'] = $status;
 			}
@@ -222,7 +222,7 @@ class CampaignsController extends ApiController {
 				'relation' => 'AND',
 			);
 			$meta_query[] = array(
-				'key'     => '_wpab_cb_campaign_type', // Ensure the key has the underscore prefix
+				'key'     => '_campaignbay_campaign_type', // Ensure the key has the underscore prefix
 				'value'   => sanitize_text_field( $campaign_type_filter ),
 				'compare' => '=',
 			);
@@ -442,7 +442,7 @@ class CampaignsController extends ApiController {
 			'modified' => $campaign->get_date_modified(),
 		);
 
-		$meta_keys = wpab_cb_get_campaign_meta_keys();
+		$meta_keys = campaignbay_get_campaign_meta_keys();
 		foreach ( $meta_keys as $key ) {
 			$data[ $key ] = $campaign->get_meta( $key );
 		}
@@ -497,7 +497,7 @@ class CampaignsController extends ApiController {
 				'status'              => array(
 					'description' => __( 'A named status for the campaign.', 'campaignbay' ),
 					'type'        => 'string',
-					'enum'        => array( 'wpab_cb_active', 'wpab_cb_inactive', 'wpab_cb_scheduled', 'wpab_cb_expired' ),
+					'enum'        => array( 'cb_scheduled', 'campaignbay_inactive', 'cb_scheduled', 'campaignbay_expired' ),
 					'context'     => array( 'view', 'edit' ),
 				),
 				'campaign_type'       => array(
@@ -590,7 +590,7 @@ class CampaignsController extends ApiController {
 			'status' => array(
 				'description' => __( 'The new status to apply to the campaigns.', 'campaignbay' ),
 				'type'        => 'string',
-				'enum'        => array( 'wpab_cb_active', 'wpab_cb_inactive' ),
+				'enum'        => array( 'cb_scheduled', 'campaignbay_inactive' ),
 				'required'    => true,
 			),
 		);

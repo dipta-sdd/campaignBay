@@ -68,7 +68,7 @@ class DbManager {
      */
     private function create_logs_table() {
 		global $wpdb;
-		$table_name      = $wpdb->prefix . 'wpab_cb_logs';
+		$table_name      = $wpdb->prefix . 'campaignbay_logs';
 		$charset_collate = $wpdb->get_charset_collate();
 
 		$sql = "CREATE TABLE $table_name (

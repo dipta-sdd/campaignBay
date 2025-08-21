@@ -98,7 +98,7 @@ class Campaign {
 			$this->post = get_post( $this->id );
 		}
 
-		if ( ! $this->post || 'wpab_cb_campaign' !== $this->post->post_type ) {
+		if ( ! $this->post || 'campaignbay_campaign' !== $this->post->post_type ) {
 			throw new Exception( 'Invalid campaign provided.' );
 		}
 
@@ -135,9 +135,9 @@ class Campaign {
 	 * @access private
 	 */
 	public function load_usage_count() {
-		wpab_cb_log('load_usage_count for campaign: ' . $this->get_id(), 'DEBUG' );
+		campaignbay_log('load_usage_count for campaign: ' . $this->get_id(), 'DEBUG' );
 		global $wpdb;
-		$table_name = $wpdb->prefix . 'wpab_cb_logs';
+		$table_name = $wpdb->prefix . 'campaignbay_logs';
 
 		// Perform a direct, indexed query to count distinct successful orders for this campaign.
 		$count = $wpdb->get_var(
@@ -151,10 +151,10 @@ class Campaign {
 				$this->id
 			)
 		);
-		wpab_cb_log( 'Usage count loaded for campaign: #' . $this->get_id() . ' ' . $this->get_title() . ' - ' . $count, 'DEBUG' );
+		campaignbay_log( 'Usage count loaded for campaign: #' . $this->get_id() . ' ' . $this->get_title() . ' - ' . $count, 'DEBUG' );
 		$this->usage_count = (int) $count;
 		$this->update_meta( 'usage_count', $this->usage_count );
-		wpab_cb_log( 'Usage count loaded for campaign: #' . $this->get_id() . ' ' . $this->get_title() . ' - ' . $this->usage_count, 'DEBUG' );
+		campaignbay_log( 'Usage count loaded for campaign: #' . $this->get_id() . ' ' . $this->get_title() . ' - ' . $this->usage_count, 'DEBUG' );
 	}
 
 	/**
@@ -327,10 +327,10 @@ class Campaign {
 		if ( empty( $args['status'] ) && 'scheduled' !== $args['campaign_type'] ) {
 			self::throw_validation_error( 'status' );
 		} elseif ( empty( $args['status'] ) && 'scheduled' === $args['campaign_type'] ) {
-			$args['status'] = 'wpab_cb_scheduled';
+			$args['status'] = 'cb_scheduled';
 		}
 
-		$allowed_statuses = array( 'wpab_cb_active', 'wpab_cb_inactive', 'wpab_cb_scheduled' );
+		$allowed_statuses = array( 'cb_scheduled', 'campaignbay_inactive', 'cb_scheduled' );
 		if ( ! in_array( $args['status'], $allowed_statuses, true ) ) {
 			self::throw_validation_error( 'status' );
 		}
@@ -340,10 +340,10 @@ class Campaign {
 			self::throw_validation_error( 'campaign_type' );
 		}
 
-		if( 'wpab_cb_scheduled' === $args['status'] && empty( $args['start_datetime'] ) ){
+		if( 'cb_scheduled' === $args['status'] && empty( $args['start_datetime'] ) ){
 			self::throw_validation_error( 'start_datetime' );
 		}
-		if( 'wpab_cb_scheduled' === $args['status'] && empty( $args['end_datetime'] ) ){
+		if( 'cb_scheduled' === $args['status'] && empty( $args['end_datetime'] ) ){
 			self::throw_validation_error( 'end_datetime' );
 		}
 
@@ -365,19 +365,21 @@ class Campaign {
 				self::throw_validation_error( 'target_ids' );
 			}
 		}
-		
+		campaignbay_log( 'Creating campaign post: ' . $args['title'], 'DEBUG' );
+		campaignbay_log( 'Status: ' . $args['status'], 'DEBUG' );
 
 		// Create the post.
 		$post_data = array(
 			'post_title'  => sanitize_text_field( $args['title'] ),
-			'post_type'   => 'wpab_cb_campaign',
+			'post_type'   => 'campaignbay_campaign',
 			'post_status' => sanitize_key( $args['status'] ),
 		);
 
 		$post_id = wp_insert_post( $post_data , true );
 
 		if ( is_wp_error( $post_id ) ) {
-			throw new Exception( 'Failed to create campaign post.' );
+			campaignbay_log( 'Failed to create campaign post: ' . $post_id->get_error_message(), 'ERROR' );
+			throw new Exception( $post_id->get_error_message() );
 		}
 
 		// Create the campaign object and update it with the provided arguments.
@@ -389,7 +391,7 @@ class Campaign {
 		 * @param int      $campaign_id The ID of the new campaign.
 		 * @param Campaign $campaign    The campaign object.
 		 */
-		do_action( 'wpab_cb_campaign_save', $campaign->id, $campaign );
+		do_action( 'campaignbay_campaign_save', $campaign->id, $campaign );
 		// Log the activity.
 		Logger::get_instance()->log(
 			'activity',
@@ -436,7 +438,7 @@ class Campaign {
 		 * @param int      $campaign_id The ID of the updated campaign.
 		 * @param Campaign $campaign    The campaign object.
 		 */
-		do_action( 'wpab_cb_campaign_save', $this->id, $this );	
+		do_action( 'campaignbay_campaign_save', $this->id, $this );	
 		// Log the activity.
 		Logger::get_instance()->log(
 			'activity',
@@ -465,7 +467,7 @@ class Campaign {
 		 *
 		 * @param int      $campaign_id The ID of the deleted campaign.
 		 */
-		do_action( 'wpab_cb_campaign_delete', $campaign_id );
+		do_action( 'campaignbay_campaign_delete', $campaign_id );
 		// Log the activity.
 		Logger::get_instance()->log(
 			'activity',
@@ -484,10 +486,10 @@ class Campaign {
 	 * @access private
 	 */
 	private function load_meta() {
-		$meta_keys = wpab_cb_get_campaign_meta_keys();
+		$meta_keys = campaignbay_get_campaign_meta_keys();
 
 		foreach ( $meta_keys as $key ) {
-			$value = get_post_meta( $this->id, '_wpab_cb_' . $key, true );
+			$value = get_post_meta( $this->id, '_campaignbay_' . $key, true );
 			$this->meta[ $key ] = $value;
 		}
 	}
@@ -500,7 +502,7 @@ class Campaign {
 	 * @param array $args The arguments containing metadata.
 	 */
 	private function update_meta_from_args( $args ) {
-		$meta_keys = wpab_cb_get_campaign_meta_keys();
+		$meta_keys = campaignbay_get_campaign_meta_keys();
 
 		foreach ( $meta_keys as $key ) {
 			if ( isset( $args[ $key ] ) ) {
@@ -609,7 +611,7 @@ class Campaign {
 	 */
 	public function update_meta( $key, $value ) {
 		$this->meta[ $key ] = $value;
-		update_post_meta( $this->id, '_wpab_cb_' . $key, $value );
+		update_post_meta( $this->id, '_campaignbay_' . $key, $value );
 	}
 
 	/**
@@ -649,7 +651,7 @@ class Campaign {
 			return $date->format( 'Y-m-d H:i:s' );
 		} catch ( Exception $e ) {
 			// Catch potential errors from invalid date formats.
-			wpab_cb_log( 'Invalid start_datetime format for campaign #' . $this->id, 'ERROR' );
+			campaignbay_log( 'Invalid start_datetime format for campaign #' . $this->id, 'ERROR' );
 			return null;
 		}
 	}
@@ -672,7 +674,7 @@ class Campaign {
 			$date->setTimezone( new DateTimeZone( 'UTC' ) );
 			return $date->format( 'Y-m-d H:i:s' );
 		} catch ( Exception $e ) {
-			wpab_cb_log( 'Invalid end_datetime format for campaign #' . $this->id, 'ERROR' );
+			campaignbay_log( 'Invalid end_datetime format for campaign #' . $this->id, 'ERROR' );
 			return null;
 		}
 	}

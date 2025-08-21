@@ -156,7 +156,7 @@ const CampaignsEdit = () => {
   const handleCampaignTypeChange = (value) => {
     setCampaignType(value);
     if (value === "scheduled") {
-      setCampaignStatus("wpab_cb_scheduled");
+      setCampaignStatus("cb_scheduled");
     }
   };
 
@@ -220,14 +220,14 @@ const CampaignsEdit = () => {
       }
     }
     if (
-      campaignData.campaign_status === "wpab_cb_scheduled" &&
+      campaignData.campaign_status === "cb_scheduled" &&
       !campaignData?.start_datetime
     ) {
       setErrors({ start_datetime: "Start datetime is required" });
       return;
     }
     if (
-      campaignData.campaign_status === "wpab_cb_scheduled" &&
+      campaignData.campaign_status === "cb_scheduled" &&
       !campaignData?.end_datetime
     ) {
       setErrors({ end_datetime: "End datetime is required" });
@@ -369,16 +369,16 @@ const CampaignsEdit = () => {
                 value={campaignStatus}
                 onChange={(e) => handleCampaignStatusChange(e.target.value)}
               >
-                <option value="wpab_cb_active">
+                <option value="cb_scheduled">
                   {__("Active", "campaignbay")}
                 </option>
-                <option value="wpab_cb_inactive">
+                <option value="campaignbay_inactive">
                   {__("Inactive", "campaignbay")}
                 </option>
-                <option value="wpab_cb_scheduled">
+                <option value="cb_scheduled">
                   {__("Scheduled", "campaignbay")}
                 </option>
-                <option value="wpab_cb_expired">
+                <option value="campaignbay_expired">
                   {__("Expired", "campaignbay")}
                 </option>
               </select>
@@ -514,7 +514,7 @@ const CampaignsEdit = () => {
                 </div>
               </div>
             )}
-            {campaignStatus === "wpab_cb_scheduled" && (
+            {campaignStatus === "cb_scheduled" && (
               <div className="cb-form-input-con">
                 <label htmlFor="start-time">
                   {__("SELECT CAMPAIGN DURATION", "campaignbay")} <Required />

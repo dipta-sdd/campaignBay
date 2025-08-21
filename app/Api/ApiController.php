@@ -54,7 +54,7 @@ class ApiController extends WP_REST_Controller {
 	 *
 	 * @var ApiController
 	 */
-	public $namespace = WPAB_CB_TEXT_DOMAIN . '/';
+	public $namespace = CAMPAIGNBAY_TEXT_DOMAIN . '/';
 
 	/**
 	 * Rest route version.

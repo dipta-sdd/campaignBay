@@ -55,7 +55,7 @@ class SettingsController extends ApiController {
 	 * @return void
 	 */
 	public function run() {
-		$this->type      = 'wpab_cb_api_settings';
+		$this->type      = 'campaignbay_api_settings';
 		$this->rest_base = 'settings';
 
 		/*Custom Rest Routes*/
@@ -157,7 +157,7 @@ class SettingsController extends ApiController {
 	public function get_item( $request ) {
 		$response = array();
 
-		$saved_options = wpab_cb_get_options();
+		$saved_options = campaignbay_get_options();
 
 		$schema = $this->get_registered_schema();
 
@@ -199,13 +199,13 @@ class SettingsController extends ApiController {
 			return new WP_Error(
 				'rest_invalid_stored_value',
 				/* translators: %s: The name of the plugin setting or property. */
-				sprintf( __( 'The %s property has an invalid stored value, and cannot be updated to null.', 'campaignbay' ), WPAB_CB_OPTION_NAME ),
+				sprintf( __( 'The %s property has an invalid stored value, and cannot be updated to null.', 'campaignbay' ), CAMPAIGNBAY_OPTION_NAME ),
 				array( 'status' => 500 )
 			);
 		}
 
 		$sanitized_options = $this->prepare_value( $params, $schema );
-		wpab_cb_update_options( $sanitized_options );
+		campaignbay_update_options( $sanitized_options );
 
 		return $this->get_item( $request );
 	}

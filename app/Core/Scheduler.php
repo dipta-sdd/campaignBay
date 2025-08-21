@@ -44,8 +44,8 @@ class Scheduler {
 	private $hooks = array();
 
 	// Define our custom hook names as constants for consistency and to avoid typos.
-	const ACTIVATION_HOOK   = 'wpab_cb_activate_campaign_event';
-	const DEACTIVATION_HOOK = 'wpab_cb_deactivate_campaign_event';
+	const ACTIVATION_HOOK   = 'campaignbay_activate_campaign_event';
+	const DEACTIVATION_HOOK = 'campaignbay_deactivate_campaign_event';
 
 
 	/**
@@ -85,14 +85,14 @@ class Scheduler {
 	 */
 	private function define_hooks() {
 		// The main trigger to set up schedules when a campaign is saved or updated.
-		$this->add_action( 'wpab_cb_campaign_save', 'handle_campaign_save', 10, 2 );
+		$this->add_action( 'campaignbay_campaign_save', 'handle_campaign_save', 10, 2 );
 
 		// The hooks that our cron events will trigger to change the campaign status.
 		$this->add_action( self::ACTIVATION_HOOK, 'run_campaign_activation', 10, 1 );
 		$this->add_action( self::DEACTIVATION_HOOK, 'run_campaign_deactivation', 10, 1 );
 
 		// Hook to clean up schedules if a campaign is deleted from the database.
-		$this->add_action( 'wpab_cb_campaign_delete', 'clear_campaign_schedules_on_delete', 10, 1 );
+		$this->add_action( 'campaignbay_campaign_delete', 'clear_campaign_schedules_on_delete', 10, 1 );
 
 		// Hook to check for scheduled campaigns.
 		// dont change this priority, it must be 2 to run after the post type is registered.
@@ -120,8 +120,8 @@ class Scheduler {
 		$campaign = new Campaign( $campaign_id );
 		$this->clear_campaign_schedules( $campaign_id );
 		$status = $campaign->get_status();
-		if ( 'wpab_cb_scheduled' !== $status ) {
-			wpab_cb_log( sprintf( 'Campaign #%d status is "%s", not "scheduled". No new events will be scheduled.', $campaign_id, $campaign->get_status() ), 'DEBUG' );
+		if ( 'cb_scheduled' !== $status ) {
+			campaignbay_log( sprintf( 'Campaign #%d status is "%s", not "scheduled". No new events will be scheduled.', $campaign_id, $campaign->get_status() ), 'DEBUG' );
 			return;
 		}
 
@@ -134,16 +134,16 @@ class Scheduler {
 		// Schedule the activation event if the start time is in the future.
 		if ( $start_timestamp && $start_timestamp > $current_time ) {
 			wp_schedule_single_event( $start_timestamp, self::ACTIVATION_HOOK, array( 'campaign_id' => $campaign_id ) );
-			wpab_cb_log( sprintf( 'Scheduled activation for campaign #%s at timestamp %s.', $campaign_id, $start_timestamp ), 'INFO' );
+			campaignbay_log( sprintf( 'Scheduled activation for campaign #%s at timestamp %s.', $campaign_id, $start_timestamp ), 'INFO' );
 		} elseif ( $start_timestamp && $start_timestamp <= $current_time ) {
 			$this->run_campaign_activation( $campaign_id );
-			wpab_cb_log( sprintf( 'Campaign #%s activation time is in the past, running activation now.', $campaign_id ), 'INFO' );
+			campaignbay_log( sprintf( 'Campaign #%s activation time is in the past, running activation now.', $campaign_id ), 'INFO' );
 		}
 
 		// Schedule the deactivation event if the end time is in the future.
 		if ( $end_timestamp && $end_timestamp > $current_time ) {
 			wp_schedule_single_event( $end_timestamp, self::DEACTIVATION_HOOK, array( 'campaign_id' => $campaign_id ) );
-			wpab_cb_log( sprintf( 'Scheduled deactivation for campaign #%s at timestamp %s.', $campaign_id, $end_timestamp ), 'INFO' );
+			campaignbay_log( sprintf( 'Scheduled deactivation for campaign #%s at timestamp %s.', $campaign_id, $end_timestamp ), 'INFO' );
 		}
 	}
 
@@ -159,9 +159,9 @@ class Scheduler {
 	public function run_scheduled_campaigns_cron() {
 		$campaigns_to_check_query = new WP_Query(
 			array(
-				'post_type'      => 'wpab_cb_campaign',
+				'post_type'      => 'campaignbay_campaign',
 				// Get all campaigns that are currently in a state that could potentially change.
-				'post_status'    => array( 'wpab_cb_scheduled', 'wpab_cb_active' ),
+				'post_status'    => array( 'cb_scheduled', 'cb_scheduled' ),
 				'posts_per_page' => -1,
 				'no_found_rows'  => true,
 				'fields'         => 'ids', // Performance: only fetch the post IDs.
@@ -182,16 +182,16 @@ class Scheduler {
 			$start_timestamp = $campaign->get_start_timestamp();
 			$end_timestamp   = $campaign->get_end_timestamp();
 			
-			if ( 'wpab_cb_scheduled' === $campaign->get_status() && $start_timestamp && $start_timestamp <= $current_timestamp ) {
-				wpab_cb_log( sprintf( 'Failsafe: Activating campaign #%d (%s) as its start time (%s) has passed. Current time: %s.', $campaign_id, $campaign->get_title(), date( 'Y-m-d H:i:s', $start_timestamp ), date( 'Y-m-d H:i:s', $current_timestamp ) ), 'INFO' );
+			if ( 'cb_scheduled' === $campaign->get_status() && $start_timestamp && $start_timestamp <= $current_timestamp ) {
+				campaignbay_log( sprintf( 'Failsafe: Activating campaign #%d (%s) as its start time (%s) has passed. Current time: %s.', $campaign_id, $campaign->get_title(), date( 'Y-m-d H:i:s', $start_timestamp ), date( 'Y-m-d H:i:s', $current_timestamp ) ), 'INFO' );
 				$this->run_campaign_activation( $campaign->get_id() );
 				$cache_needs_clearing = true;
 			}
 			
 			// --- Check for Deactivation ---
 			// If the campaign is active and its end time has passed, expire it.
-			if ( 'wpab_cb_active' === $campaign->get_status() && $end_timestamp && $end_timestamp <= $current_timestamp ) {
-				wpab_cb_log( sprintf( 'Failsafe: Expiring campaign #%d (%s) as its end time (%s) has passed. Current time: %s.', $campaign_id, $campaign->get_title(), date( 'Y-m-d H:i:s', $end_timestamp ), date( 'Y-m-d H:i:s', $current_timestamp ) ), 'INFO' );
+			if ( 'cb_scheduled' === $campaign->get_status() && $end_timestamp && $end_timestamp <= $current_timestamp ) {
+				campaignbay_log( sprintf( 'Failsafe: Expiring campaign #%d (%s) as its end time (%s) has passed. Current time: %s.', $campaign_id, $campaign->get_title(), date( 'Y-m-d H:i:s', $end_timestamp ), date( 'Y-m-d H:i:s', $current_timestamp ) ), 'INFO' );
 				$this->run_campaign_deactivation( $campaign->get_id() );
 				$cache_needs_clearing = true;
 			}
@@ -208,13 +208,13 @@ class Scheduler {
 	 * @param int $campaign_id The ID of the campaign to activate.
 	 */
 	public function run_campaign_activation( $campaign_id ) {
-		wpab_cb_log( sprintf( 'WP-Cron: Running activation for campaign #%d.', $campaign_id ), 'INFO' );
+		campaignbay_log( sprintf( 'WP-Cron: Running activation for campaign #%d.', $campaign_id ), 'INFO' );
 		
 		// Update the post status to 'active'.
 		wp_update_post(
 			array(
 				'ID'          => $campaign_id,
-				'post_status' => 'wpab_cb_active',
+				'post_status' => 'cb_scheduled',
 			)
 		);
 		// Clear the main campaign cache so the change is reflected immediately on the frontend.
@@ -227,13 +227,13 @@ class Scheduler {
 	 * @param int $campaign_id The ID of the campaign to expire.
 	 */
 	public function run_campaign_deactivation( $campaign_id ) {
-		wpab_cb_log( sprintf( 'WP-Cron: Running deactivation for campaign #%d.', $campaign_id ), 'INFO' );
+		campaignbay_log( sprintf( 'WP-Cron: Running deactivation for campaign #%d.', $campaign_id ), 'INFO' );
 		
 		// Update the post status to 'expired'.
 		wp_update_post(
 			array(
 				'ID'          => $campaign_id,
-				'post_status' => 'wpab_cb_expired',
+				'post_status' => 'campaignbay_expired',
 			)
 		);
 		// Clear the main campaign cache.
@@ -246,7 +246,7 @@ class Scheduler {
 	 * @param int $campaign_id The post ID being deleted.
 	 */
 	public function clear_campaign_schedules_on_delete( $campaign_id ) {
-		if ( 'wpab_cb_campaign' === get_post_type( $campaign_id ) ) {
+		if ( 'campaignbay_campaign' === get_post_type( $campaign_id ) ) {
 			$this->clear_campaign_schedules( $campaign_id );
 		}
 	}
@@ -261,7 +261,7 @@ class Scheduler {
 		$args = array( 'campaign_id' => $campaign_id );
 		wp_clear_scheduled_hook( self::ACTIVATION_HOOK, $args );
 		wp_clear_scheduled_hook( self::DEACTIVATION_HOOK, $args );
-		wpab_cb_log( sprintf( 'Cleared all schedules for campaign #%d.', $campaign_id ), 'DEBUG' );
+		campaignbay_log( sprintf( 'Cleared all schedules for campaign #%d.', $campaign_id ), 'DEBUG' );
 	}
 
 	/**

@@ -42,7 +42,7 @@ class Logger {
 	 */
 	public function log( $log_type, $message, $context = array() ) {
 		global $wpdb;
-		$table_name = $wpdb->prefix . 'wpab_cb_logs';
+		$table_name = $wpdb->prefix . 'campaignbay_logs';
 
 		// --- Prepare core, indexed columns ---
 		$campaign_id = isset( $context['campaign_id'] ) ? absint( $context['campaign_id'] ) : 0;

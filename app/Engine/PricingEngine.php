@@ -39,7 +39,7 @@ class PricingEngine {
 	 * The single instance of the class.
 	 *
 	 * @since 1.0.0
-	 * @var   WPAB_CB_Pricing_Engine
+	 * @var   CAMPAIGNBAY_Pricing_Engine
 	 * @access private
 	 */
 	private static $instance = null;
@@ -87,7 +87,7 @@ class PricingEngine {
 	 * @since 1.0.0
 	 */
 	private function __construct() {
-		if(wpab_cb_get_options('global_enableAddon')){
+		if(campaignbay_get_options('global_enableAddon')){
 			$this->define_hooks();
 		}
 	}
@@ -100,9 +100,9 @@ class PricingEngine {
 	 */
 	private function define_hooks() {
 
-		$default_priority = wpab_cb_get_options('global_defaultPriority') ?? 10;
+		$default_priority = campaignbay_get_options('global_defaultPriority') ?? 10;
 
-		$enabled_plugin = wpab_cb_get_options('global_enableAddon');
+		$enabled_plugin = campaignbay_get_options('global_enableAddon');
 		if(!$enabled_plugin){
 			return;
 		}
@@ -131,7 +131,7 @@ class PricingEngine {
 		
 
 		// Conditionally add the hook for inline "add more" notices in the cart, based on settings.
-		if( wpab_cb_get_options('cart_showNextDiscountBar') ){
+		if( campaignbay_get_options('cart_showNextDiscountBar') ){
 			$this->add_filter( 'woocommerce_after_cart_item_name', 'display_inline_cart_notice', $default_priority, 2 );
 		}
 
@@ -150,7 +150,7 @@ class PricingEngine {
 		$this->add_action( 'woocommerce_store_api_checkout_update_order_meta', 'save_discount_breakdown_to_order_meta', $default_priority, 1 );
 
 		// prevent coupon stacking
-		if( ! wpab_cb_get_options('cart_allowWcCouponStacking') ){
+		if( ! campaignbay_get_options('cart_allowWcCouponStacking') ){
 			$this->add_action( 'woocommerce_coupon_is_valid_for_product', 'prevent_coupon_stacking_to_product', $default_priority, 4 );
 		}
 
@@ -188,13 +188,13 @@ class PricingEngine {
 		// The cart object is available globally via WC()->cart at this point.
 		$cart = WC()->cart;
 
-		if ( $cart && ! empty( $cart->wpab_cb_discount_breakdown ) ) {
+		if ( $cart && ! empty( $cart->campaignbay_discount_breakdown ) ) {
 			// Get the breakdown array we created in the previous hook.
-			$breakdown = $cart->wpab_cb_discount_breakdown;
+			$breakdown = $cart->campaignbay_discount_breakdown;
 
 			// Save the entire breakdown array to a single meta key on the order.
-			$order->update_meta_data( '_wpab_cb_discount_breakdown', $breakdown );
-			wpab_cb_log( sprintf( 'Saved discount breakdown to order #%d (Classic Checkout).', $order->get_id() ), 'INFO' );
+			$order->update_meta_data( '_campaignbay_discount_breakdown', $breakdown );
+			campaignbay_log( sprintf( 'Saved discount breakdown to order #%d (Classic Checkout).', $order->get_id() ), 'INFO' );
 		}
 	}
 
@@ -321,8 +321,8 @@ class PricingEngine {
 		if ( is_admin() && ! defined( 'DOING_AJAX' ) ) {
             return;
         }
-		if( wpab_cb_get_options('cart_showDiscountBreakdown') ){
-			$discount_breakdown = $cart->wpab_cb_discount_breakdown ?? array();
+		if( campaignbay_get_options('cart_showDiscountBreakdown') ){
+			$discount_breakdown = $cart->campaignbay_discount_breakdown ?? array();
 
 			foreach( $discount_breakdown as $campaign_id => $campaign_data ){
 				$total_old_price = $campaign_data['total_old_price'];
@@ -339,17 +339,17 @@ class PricingEngine {
 					'total' => 0 - $discount_value,
 				));
 
-				if( wpab_cb_get_options( 'debug_enableMode' ) ){
-					wpab_cb_log('------------------------------------------------------------------------------------------------', 'DEBUG' );
-					wpab_cb_log('campaign: ' . $campaign_id . '  ' . $campaign_data['title'] , 'DEBUG' );
-					wpab_cb_log('discount: ' . $discount_value, 'DEBUG' );
-					wpab_cb_log('total_old_price: ' . $total_old_price, 'DEBUG' );
-					wpab_cb_log('total_new_price: ' . $total_new_price, 'DEBUG' );
-					wpab_cb_log('current_total: ' . $current_total, 'DEBUG' );
-					wpab_cb_log('current_subtotal: ' . $current_subtotal, 'DEBUG' );
-					wpab_cb_log('new_total: ' . $cart->get_total('edit'), 'DEBUG' );
-					wpab_cb_log('new_subtotal: ' . $cart->get_subtotal(), 'DEBUG' );
-					wpab_cb_log('------------------------------------------------------------------------------------------------', 'DEBUG' );
+				if( campaignbay_get_options( 'debug_enableMode' ) ){
+					campaignbay_log('------------------------------------------------------------------------------------------------', 'DEBUG' );
+					campaignbay_log('campaign: ' . $campaign_id . '  ' . $campaign_data['title'] , 'DEBUG' );
+					campaignbay_log('discount: ' . $discount_value, 'DEBUG' );
+					campaignbay_log('total_old_price: ' . $total_old_price, 'DEBUG' );
+					campaignbay_log('total_new_price: ' . $total_new_price, 'DEBUG' );
+					campaignbay_log('current_total: ' . $current_total, 'DEBUG' );
+					campaignbay_log('current_subtotal: ' . $current_subtotal, 'DEBUG' );
+					campaignbay_log('new_total: ' . $cart->get_total('edit'), 'DEBUG' );
+					campaignbay_log('new_subtotal: ' . $cart->get_subtotal(), 'DEBUG' );
+					campaignbay_log('------------------------------------------------------------------------------------------------', 'DEBUG' );
 				}
 				
 			}
@@ -374,8 +374,8 @@ class PricingEngine {
 		if ( is_admin() && ! defined( 'DOING_AJAX' ) ) {
 			return;
 		}
-		$cart->wpab_cb_discount_breakdown = array();
-		$allow_campaign_stacking = wpab_cb_get_options('cart_allowCampaignStacking');
+		$cart->campaignbay_discount_breakdown = array();
+		$allow_campaign_stacking = campaignbay_get_options('cart_allowCampaignStacking');
 		
 		foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
 			// Get the product, quantity and discount data.
@@ -450,10 +450,10 @@ class PricingEngine {
 				}
 				
 				// If the next tier is found and the next discount bar is enabled, calculate the price based on the next tier.
-				if( $next_tier_price !== null && $next_tier_price < $simple_price && wpab_cb_get_options('cart_showNextDiscountBar') ){
+				if( $next_tier_price !== null && $next_tier_price < $simple_price && campaignbay_get_options('cart_showNextDiscountBar') ){
 
 					// Get the format for the next discount bar.
-					$format = wpab_cb_get_options( 'cart_nextDiscountFormat' );
+					$format = campaignbay_get_options( 'cart_nextDiscountFormat' );
 
 					if ( !empty( $format ) ) {
 
@@ -489,8 +489,8 @@ class PricingEngine {
 				$cart->cart_contents[ $cart_item_key ]['cb_discount_data']['on_campaign'] = true;
 
 				// Initialize the discount breakdown array if it doesn't exist.
-				if ( ! isset( $cart->wpab_cb_discount_breakdown[ $campaign_id ] ) ) {
-					$cart->wpab_cb_discount_breakdown[ $campaign_id ] = array(
+				if ( ! isset( $cart->campaignbay_discount_breakdown[ $campaign_id ] ) ) {
+					$cart->campaignbay_discount_breakdown[ $campaign_id ] = array(
 						'title'    => $discount_data['discounts']['quantity']['campaign_title'],
 						'total_old_price' => 0,
 						'total_new_price' => 0,
@@ -498,20 +498,20 @@ class PricingEngine {
 				}
 
 				// Add the discount to the discount breakdown array.
-				$cart->wpab_cb_discount_breakdown[ $campaign_id ]['total_old_price'] += (float) $base_price * (float) $quantity;
-				$cart->wpab_cb_discount_breakdown[ $campaign_id ]['total_new_price'] += (float) $quantity_price * (float) $quantity;
+				$cart->campaignbay_discount_breakdown[ $campaign_id ]['total_old_price'] += (float) $base_price * (float) $quantity;
+				$cart->campaignbay_discount_breakdown[ $campaign_id ]['total_new_price'] += (float) $quantity_price * (float) $quantity;
 
 				if($allow_campaign_stacking && isset( $discount_data['discounts']['simple']['price'] ) ){
 					$campaign_id = $discount_data['discounts']['simple']['campaign_id'];
-					if ( ! isset( $cart->wpab_cb_discount_breakdown[ $campaign_id ] ) ) {
-						$cart->wpab_cb_discount_breakdown[ $campaign_id ] = array(
+					if ( ! isset( $cart->campaignbay_discount_breakdown[ $campaign_id ] ) ) {
+						$cart->campaignbay_discount_breakdown[ $campaign_id ] = array(
 							'title'    => $discount_data['discounts']['simple']['campaign_title'],
 							'total_old_price' => 0,
 							'total_new_price' => 0,
 						);
 					}
-					$cart->wpab_cb_discount_breakdown[ $campaign_id ]['total_old_price'] += (float) $discount_data['base_price'] * (float) $quantity;
-					$cart->wpab_cb_discount_breakdown[ $campaign_id ]['total_new_price'] += (float) $discount_data['discounts']['simple']['price'] * (float) $quantity;
+					$cart->campaignbay_discount_breakdown[ $campaign_id ]['total_old_price'] += (float) $discount_data['base_price'] * (float) $quantity;
+					$cart->campaignbay_discount_breakdown[ $campaign_id ]['total_new_price'] += (float) $discount_data['discounts']['simple']['price'] * (float) $quantity;
 				}
 			}elseif( isset( $discount_data['discounts']['simple']['price'] ) ){
 				$cart->cart_contents[ $cart_item_key ]['cb_discount_data']['old_price'] = $discount_data['base_price'];
@@ -519,28 +519,28 @@ class PricingEngine {
 				$cart->cart_contents[ $cart_item_key ]['cb_discount_data']['quantity'] = $quantity;
 				$cart->cart_contents[ $cart_item_key ]['cb_discount_data']['on_campaign'] = true;
 				$campaign_id = $discount_data['discounts']['simple']['campaign_id'];
-				if ( ! isset( $cart->wpab_cb_discount_breakdown[ $campaign_id ] ) ) {
-					$cart->wpab_cb_discount_breakdown[ $campaign_id ] = array(
+				if ( ! isset( $cart->campaignbay_discount_breakdown[ $campaign_id ] ) ) {
+					$cart->campaignbay_discount_breakdown[ $campaign_id ] = array(
 						'title'    => $discount_data['discounts']['simple']['campaign_title'],
 						'total_old_price' => 0,
 						'total_new_price' => 0,
 					);
 				}
-				$cart->wpab_cb_discount_breakdown[ $campaign_id ]['total_old_price'] += (float) $discount_data['base_price'] * (float) $quantity;
-				$cart->wpab_cb_discount_breakdown[ $campaign_id ]['total_new_price'] += (float) $discount_data['discounts']['simple']['price'] * (float) $quantity;
+				$cart->campaignbay_discount_breakdown[ $campaign_id ]['total_old_price'] += (float) $discount_data['base_price'] * (float) $quantity;
+				$cart->campaignbay_discount_breakdown[ $campaign_id ]['total_new_price'] += (float) $discount_data['discounts']['simple']['price'] * (float) $quantity;
 			}
 
-			if( wpab_cb_get_options('debug_enableMode') ){
-				wpab_cb_log('------------------------------------------------------------------------------------------------', 'DEBUG' );
-				wpab_cb_log('cart_item_key: ' . $cart_item_key . ' ' . $product->get_name() . ' ' . $product->get_id(), 'DEBUG' );
-				wpab_cb_log('quantity: ' . $quantity, 'DEBUG' );
-				wpab_cb_log('regular_price: ' . $product->get_regular_price(), 'DEBUG' );
-				wpab_cb_log('campaign_price: ' . $base_price, 'DEBUG' );
-				wpab_cb_log('quantity_price: ' . $quantity_price, 'DEBUG' );
-				wpab_cb_log('simple_price: ' . $simple_price, 'DEBUG' );
-				wpab_cb_log('best_price: ' . $discount_data['discounts']['best_price'], 'DEBUG' );
-				wpab_cb_log('price: ' . $product->get_price(), 'DEBUG' );
-				wpab_cb_log('campaign_id: ' . $campaign_id, 'DEBUG' );
+			if( campaignbay_get_options('debug_enableMode') ){
+				campaignbay_log('------------------------------------------------------------------------------------------------', 'DEBUG' );
+				campaignbay_log('cart_item_key: ' . $cart_item_key . ' ' . $product->get_name() . ' ' . $product->get_id(), 'DEBUG' );
+				campaignbay_log('quantity: ' . $quantity, 'DEBUG' );
+				campaignbay_log('regular_price: ' . $product->get_regular_price(), 'DEBUG' );
+				campaignbay_log('campaign_price: ' . $base_price, 'DEBUG' );
+				campaignbay_log('quantity_price: ' . $quantity_price, 'DEBUG' );
+				campaignbay_log('simple_price: ' . $simple_price, 'DEBUG' );
+				campaignbay_log('best_price: ' . $discount_data['discounts']['best_price'], 'DEBUG' );
+				campaignbay_log('price: ' . $product->get_price(), 'DEBUG' );
+				campaignbay_log('campaign_id: ' . $campaign_id, 'DEBUG' );
 			}
 			
 		}
@@ -653,7 +653,7 @@ class PricingEngine {
 		// If the campaign is active and provides the best price, return the formatted price.
 		if ( $discount_data['on_campaign'] && isset( $discount_data['discounts']['best_price'] ) && $discount_data['discounts']['best_price'] < $regular_price ) {
 			// If the option to show the discounted price is enabled, return the formatted price.
-			if( wpab_cb_get_options('product_showDiscountedPrice') && isset( $discount_data['discounts']['best_price'] ) ){
+			if( campaignbay_get_options('product_showDiscountedPrice') && isset( $discount_data['discounts']['best_price'] ) ){
 				$sale_price    = (float) $discount_data['discounts']['best_price'];
 				// Format the price using WooCommerce's standard sale price function.
 				$price_html = wc_format_sale_price(
@@ -681,7 +681,7 @@ class PricingEngine {
 	 * @return bool The modified is on sale value.
 	 */
 	public function filter_is_product_on_sale( $is_on_sale, $product ) {
-		if( ! wpab_cb_get_options('product_showDiscountedPrice') ) {
+		if( ! campaignbay_get_options('product_showDiscountedPrice') ) {
 			return $is_on_sale;
 		}
 		// Get the discount data for the product.
@@ -700,14 +700,14 @@ class PricingEngine {
 		global $product;
 		// If the product is not a valid WC_Product object, log an error and return.
 		if ( ! $product instanceof WC_Product ) {
-			wpab_cb_log('Invalid product type: ' . gettype( $product ), 'ERROR' );
+			campaignbay_log('Invalid product type: ' . gettype( $product ), 'ERROR' );
 			return;
 		}
 		// Get the discount data for the product.
 		$discount_data = $this->get_or_calculate_product_discount( $product );
 
 		if($product->is_type('variable')){
-			wpab_cb_log('variable product___________________________________________---', 'DEBUG' );
+			campaignbay_log('variable product___________________________________________---', 'DEBUG' );
 			$children = $product->get_children();
 			foreach ( $children as $child_id ) {
 				$child = wc_get_product( $child_id );
@@ -744,7 +744,7 @@ class PricingEngine {
 			return null;
 		}
 		// Get the format for the product summary message.
-		$format = wpab_cb_get_options( 'product_messageFormat' );
+		$format = campaignbay_get_options( 'product_messageFormat' );
 		if( empty( $format ) ){
 			return null;
 		}
@@ -799,7 +799,7 @@ class PricingEngine {
 		$discount_data = $cart_item['cb_discount_data'];
 		
 		// If no discount data is set, or the option to show the discounted price is disabled, return the original subtotal.
-		if ( ! $discount_data['new_price'] || ! $discount_data['old_price'] || ! $discount_data['quantity'] || ! wpab_cb_get_options('product_showDiscountedPrice') ) {
+		if ( ! $discount_data['new_price'] || ! $discount_data['old_price'] || ! $discount_data['quantity'] || ! campaignbay_get_options('product_showDiscountedPrice') ) {
 			$quantity = $cart_item['quantity'];
 			$price = $cart_item['data']->get_price();
 			$regular_price = $price * $quantity;
@@ -901,7 +901,7 @@ class PricingEngine {
 		// If the product is not a valid WC_Product object, log an error and return.
 		
 		if ( ! $product instanceof WC_Product ) {
-			//wpab_cb_log('Invalid product type: ' . gettype( $product ), 'ERROR' );
+			//campaignbay_log('Invalid product type: ' . gettype( $product ), 'ERROR' );
 			return array(
 				'base_price' => 0,
 				'on_sale'   => false,
@@ -912,8 +912,8 @@ class PricingEngine {
 		// Get the product ID.
 		$product_id = $product->get_id();
 		// If the option to exclude sale items is enabled and the product is on sale, return the sale price.
-		if( wpab_cb_get_options('product_excludeSaleItems') && $product->is_on_sale('edit') ) {
-			wpab_cb_log(' is on sale', 'DEBUG' );
+		if( campaignbay_get_options('product_excludeSaleItems') && $product->is_on_sale('edit') ) {
+			campaignbay_log(' is on sale', 'DEBUG' );
 			return array(
 				'base_price' => (float) $product->get_sale_price('edit'),
 				'on_sale'   => true,
@@ -950,12 +950,12 @@ class PricingEngine {
 		);
 
 		if ( empty( $active_campaigns ) || ! is_array( $active_campaigns ) ) {
-			wpab_cb_log('no active campaigns (' . $product_id . ' - ' . $product->get_name() . ')', 'DEBUG' );
+			campaignbay_log('no active campaigns (' . $product_id . ' - ' . $product->get_name() . ')', 'DEBUG' );
 			// If there are no active campaigns, return the discount data.
 			$this->product_discount_cache[ $product_id ] = $discount_data;
 			return $discount_data;
 		}
-		$allow_campaign_stacking = wpab_cb_get_options('cart_allowCampaignStacking');
+		$allow_campaign_stacking = campaignbay_get_options('cart_allowCampaignStacking');
 		
 		// 3. Loop through all active campaigns to categorize and evaluate them.
 		foreach ( $active_campaigns as $campaign ) {
@@ -994,11 +994,11 @@ class PricingEngine {
 				// Find the correct tier based on usage count.
 				$usage_count  = $campaign->get_usage_count();
 				$current_tier = null;
-				wpab_cb_log('_________________________________earlybird_________________________________', 'DEBUG' );
-				wpab_cb_log('_________________________________earlybird_________________________________', 'DEBUG' );
-				wpab_cb_log('_________________________________earlybird_________________________________', 'DEBUG' );
+				campaignbay_log('_________________________________earlybird_________________________________', 'DEBUG' );
+				campaignbay_log('_________________________________earlybird_________________________________', 'DEBUG' );
+				campaignbay_log('_________________________________earlybird_________________________________', 'DEBUG' );
 				
-				wpab_cb_log('usage_count: ' . $usage_count, 'DEBUG' );
+				campaignbay_log('usage_count: ' . $usage_count, 'DEBUG' );
 				// Find the first tier where the current usage is less than the max.
 				foreach ( $tiers as $tier ) {
 					if( ! isset( $tier['quantity'] ) || ! isset( $tier['total'] )){
@@ -1015,7 +1015,7 @@ class PricingEngine {
 						break; // Found the correct tier, no need to search further.
 					}
 				}
-				wpab_cb_log('current_tier: ' . print_r($current_tier, true), 'DEBUG' );
+				campaignbay_log('current_tier: ' . print_r($current_tier, true), 'DEBUG' );
 				// If a valid tier was found, calculate the price for it.
 				if ( !$current_tier ) {
 					continue;
@@ -1107,41 +1107,41 @@ class PricingEngine {
 
 		// Store the final, structured result in the cache for this page load.
 		$this->product_discount_cache[ $product_id ] = $discount_data;
-		if( wpab_cb_get_options( 'debug_enableMode' ) ){
-			wpab_cb_log('------------------------------------------------------------------------------------------------', 'DEBUG' );
-			wpab_cb_log('---------------------------------------------start----------------------------------------------', 'DEBUG' );
-			wpab_cb_log('------------------------------------------------------------------------------------------------', 'DEBUG' );
-			wpab_cb_log('product_discount_cache: ' . $product_id . ' ' . $product->get_name(), 'DEBUG' );
-			wpab_cb_log('base_price: ' . $discount_data['base_price'], 'DEBUG' );
+		if( campaignbay_get_options( 'debug_enableMode' ) ){
+			campaignbay_log('------------------------------------------------------------------------------------------------', 'DEBUG' );
+			campaignbay_log('---------------------------------------------start----------------------------------------------', 'DEBUG' );
+			campaignbay_log('------------------------------------------------------------------------------------------------', 'DEBUG' );
+			campaignbay_log('product_discount_cache: ' . $product_id . ' ' . $product->get_name(), 'DEBUG' );
+			campaignbay_log('base_price: ' . $discount_data['base_price'], 'DEBUG' );
 			if( isset( $discount_data['discounts']['best_price'] ) ){
-				wpab_cb_log('best_price: ' . $discount_data['discounts']['best_price'], 'DEBUG' );
+				campaignbay_log('best_price: ' . $discount_data['discounts']['best_price'], 'DEBUG' );
 			}
-			wpab_cb_log('price: ' . $product->get_price(), 'DEBUG' );
-			wpab_cb_log('on_sale: ' . $discount_data['on_sale'], 'DEBUG' );
-			wpab_cb_log('on_campaign: ' . $discount_data['on_campaign'], 'DEBUG' );
+			campaignbay_log('price: ' . $product->get_price(), 'DEBUG' );
+			campaignbay_log('on_sale: ' . $discount_data['on_sale'], 'DEBUG' );
+			campaignbay_log('on_campaign: ' . $discount_data['on_campaign'], 'DEBUG' );
 			if( isset( $discount_data['discounts']['best_price'] ) ){
-				wpab_cb_log('best_price: ' . $discount_data['discounts']['best_price'], 'DEBUG' );
+				campaignbay_log('best_price: ' . $discount_data['discounts']['best_price'], 'DEBUG' );
 			}
 			if( isset( $discount_data['discounts']['simple']['price'] ) ){
 				$simple = $discount_data['discounts']['simple'];
-				wpab_cb_log('	simple_price: ' . $simple['price'], 'DEBUG' );
-				wpab_cb_log('	simple_campaign_id: ' . $simple['campaign_id'], 'DEBUG' );
-				wpab_cb_log('	simple_campaign_type: ' . $simple['campaign_type'], 'DEBUG' );
-				wpab_cb_log('	simple_campaign_title: ' . $simple['campaign_title'], 'DEBUG' );
-				wpab_cb_log('	simple_is_applied: ' . $simple['is_applied'], 'DEBUG' );
+				campaignbay_log('	simple_price: ' . $simple['price'], 'DEBUG' );
+				campaignbay_log('	simple_campaign_id: ' . $simple['campaign_id'], 'DEBUG' );
+				campaignbay_log('	simple_campaign_type: ' . $simple['campaign_type'], 'DEBUG' );
+				campaignbay_log('	simple_campaign_title: ' . $simple['campaign_title'], 'DEBUG' );
+				campaignbay_log('	simple_is_applied: ' . $simple['is_applied'], 'DEBUG' );
 			}
 			if( isset( $discount_data['discounts']['quantity']['price'] ) ){
 				$quantity = $discount_data['discounts']['quantity'];
-				wpab_cb_log('	quantity_price: ' . $quantity['price'], 'DEBUG' );
-				wpab_cb_log('	quantity_campaign_id: ' . $quantity['campaign_id'], 'DEBUG' );
-				wpab_cb_log('	quantity_campaign_type: ' . $quantity['campaign_type'], 'DEBUG' );
-				wpab_cb_log('	quantity_campaign_title: ' . $quantity['campaign_title'], 'DEBUG' );
-				wpab_cb_log('	quantity_is_applied: ' . $quantity['is_applied'], 'DEBUG' );
+				campaignbay_log('	quantity_price: ' . $quantity['price'], 'DEBUG' );
+				campaignbay_log('	quantity_campaign_id: ' . $quantity['campaign_id'], 'DEBUG' );
+				campaignbay_log('	quantity_campaign_type: ' . $quantity['campaign_type'], 'DEBUG' );
+				campaignbay_log('	quantity_campaign_title: ' . $quantity['campaign_title'], 'DEBUG' );
+				campaignbay_log('	quantity_is_applied: ' . $quantity['is_applied'], 'DEBUG' );
 			}
 
-			wpab_cb_log('------------------------------------------------------------------------------------------------', 'DEBUG' );
-			wpab_cb_log('---------------------------------------------end----------------------------------------------', 'DEBUG' );
-			wpab_cb_log('------------------------------------------------------------------------------------------------', 'DEBUG' );
+			campaignbay_log('------------------------------------------------------------------------------------------------', 'DEBUG' );
+			campaignbay_log('---------------------------------------------end----------------------------------------------', 'DEBUG' );
+			campaignbay_log('------------------------------------------------------------------------------------------------', 'DEBUG' );
 		}
 		return $discount_data;
 	}
@@ -1158,7 +1158,7 @@ class PricingEngine {
 		if( ! is_array( $tiers ) || empty( $tiers ) ){
 			return '';
 		}
-		$table = '<table class="'. WPAB_CB_PLUGIN_NAME .'-quantity-tier-table">';
+		$table = '<table class="'. CAMPAIGNBAY_PLUGIN_NAME .'-quantity-tier-table">';
 		foreach( $tiers as $tier ){
 			$table .= '<tr><td>Buy minimum ' . $tier['min'] . ' pcs to get ' . $tier['value'] . ' ';
 			if( $tier['type'] === 'percentage' ){
@@ -1178,7 +1178,7 @@ class PricingEngine {
 	 *
 	 * @since 1.0.0
 	 * @access private
-	 * @param WPAB_CB_Campaign $campaign The campaign object.
+	 * @param CAMPAIGNBAY_Campaign $campaign The campaign object.
 	 * @param float       $base_price The base price of the product.
 	 * @return float The calculated price.
 	 */
@@ -1240,7 +1240,7 @@ class PricingEngine {
 			return true;
 		}
 		// If the priority method is set to apply the highest price, return true if the tier price is less than the best price.
-		if( 'apply_highest' === wpab_cb_get_options( 'product_priorityMethod' ) ){
+		if( 'apply_highest' === campaignbay_get_options( 'product_priorityMethod' ) ){
 			return  $tier_price < $best_price ;
 		}
 		// If the priority method is set to apply the lowest price, return true if the tier price is greater than the best price.

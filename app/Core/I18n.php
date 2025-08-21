@@ -27,7 +27,7 @@ class I18n {
 	public function load_plugin_textdomain() {
 
 		load_plugin_textdomain(
-			WPAB_CB_TEXT_DOMAIN,
+			CAMPAIGNBAY_TEXT_DOMAIN,
 			false,
 			dirname( dirname( plugin_basename( __FILE__ ) ) ) . '/languages'
 		);

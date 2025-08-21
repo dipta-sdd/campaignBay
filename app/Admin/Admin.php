@@ -73,7 +73,7 @@ class Admin {
 		$this->menu_info = array(
 			'page_title' => $white_label['plugin_name'],
 			'menu_title' => $white_label['menu_label'],
-			'menu_slug'  => WPAB_CB_PLUGIN_NAME,
+			'menu_slug'  => CAMPAIGNBAY_PLUGIN_NAME,
 			'icon_url'   => $white_label['menu_icon'],
 			'position'   => $white_label['position'],
 			'docs_uri' => $white_label['docs_uri'],
@@ -93,7 +93,7 @@ class Admin {
 				$this->menu_info['page_title'],
 				esc_html__( 'Dashboard', 'campaignbay' ),
 				'manage_options',
-				WPAB_CB_TEXT_DOMAIN,
+				CAMPAIGNBAY_TEXT_DOMAIN,
 				array( $this, 'add_setting_root_div' )
 			);
 		$submenu_pages = array();
@@ -119,7 +119,7 @@ class Admin {
 				esc_html( $submenu_page['menu_title'] . '-' . $this->menu_info['page_title'] ),
 				$submenu_page['menu_title'],
 				'manage_options',
-				WPAB_CB_TEXT_DOMAIN . $submenu_page['menu_slug'],
+				CAMPAIGNBAY_TEXT_DOMAIN . $submenu_page['menu_slug'],
 				array( $this, 'add_setting_root_div' )
 			);
 		}
@@ -136,7 +136,7 @@ class Admin {
 	 */
 	public function is_menu_page() {
 		$screen              = get_current_screen();
-		$admin_scripts_bases = array( 'toplevel_page_' . WPAB_CB_PLUGIN_NAME );
+		$admin_scripts_bases = array( 'toplevel_page_' . CAMPAIGNBAY_PLUGIN_NAME );
 		if ( ! ( isset( $screen->base ) && in_array( $screen->base, $admin_scripts_bases, true ) ) ) {
 			return false;
 		}
@@ -147,7 +147,7 @@ class Admin {
 	// 	if ( ! $screen ) {
 	// 		return false;
 	// 	}
-	// 	return strpos( $screen->id, WPAB_CB_PLUGIN_NAME ) !== false;
+	// 	return strpos( $screen->id, CAMPAIGNBAY_PLUGIN_NAME ) !== false;
 	// }
 
 	/**
@@ -174,7 +174,7 @@ class Admin {
 	 * @since    1.0.0
 	 */
 	public function add_setting_root_div() {
-		echo '<div id="' . esc_attr( WPAB_CB_PLUGIN_NAME ) . '"></div>';
+		echo '<div id="' . esc_attr( CAMPAIGNBAY_PLUGIN_NAME ) . '"></div>';
 	}
 
 	/**
@@ -190,9 +190,9 @@ class Admin {
 			return;
 		}
 	
-		$deps_file = WPAB_CB_PATH . 'build/admin.asset.php';
+		$deps_file = CAMPAIGNBAY_PATH . 'build/admin.asset.php';
 		$dependency = array( 'wp-i18n' );
-		$version    = WPAB_CB_VERSION;
+		$version    = CAMPAIGNBAY_VERSION;
 	
 		if ( file_exists( $deps_file ) ) {
 			$deps_file  = require $deps_file;
@@ -200,18 +200,18 @@ class Admin {
 			$version    = $deps_file['version'];
 		}
 	
-		wp_enqueue_script( WPAB_CB_PLUGIN_NAME, WPAB_CB_URL . 'build/admin.js', $dependency, $version, true );
+		wp_enqueue_script( CAMPAIGNBAY_PLUGIN_NAME, CAMPAIGNBAY_URL . 'build/admin.js', $dependency, $version, true );
 	
-		wp_enqueue_style( WPAB_CB_PLUGIN_NAME, WPAB_CB_URL . 'build/admin.css', array( 'wp-components' ), $version );
-		wp_style_add_data( WPAB_CB_PLUGIN_NAME, 'rtl', 'replace' );
+		wp_enqueue_style( CAMPAIGNBAY_PLUGIN_NAME, CAMPAIGNBAY_URL . 'build/admin.css', array( 'wp-components' ), $version );
+		wp_style_add_data( CAMPAIGNBAY_PLUGIN_NAME, 'rtl', 'replace' );
 		$woocommerce_currency_symbol = get_woocommerce_currency_symbol();
 		$localize = apply_filters(
-			WPAB_CB_OPTION_NAME  . '_admin_localize',
+			CAMPAIGNBAY_OPTION_NAME  . '_admin_localize',
 			array(
 				'version'     => $version,
-				'root_id'     => WPAB_CB_PLUGIN_NAME,
+				'root_id'     => CAMPAIGNBAY_PLUGIN_NAME,
 				'nonce'       => wp_create_nonce( 'wp_rest' ),
-				'store'       => WPAB_CB_PLUGIN_NAME,
+				'store'       => CAMPAIGNBAY_PLUGIN_NAME,
 				'rest_url'    => get_rest_url(),
 				'white_label' => Common::get_instance()->get_white_label(),
 				'woocommerce_currency_symbol' => $woocommerce_currency_symbol,
@@ -222,28 +222,28 @@ class Admin {
 			)
 		);
 	
-		wp_localize_script( WPAB_CB_PLUGIN_NAME, 'wpab_cb_Localize', $localize );
+		wp_localize_script( CAMPAIGNBAY_PLUGIN_NAME, 'campaignbay_Localize', $localize );
 		
 		// --- START OF DEBUGGING BLOCK ---
 	
-		$path_to_check = WPAB_CB_PATH . 'languages';
-		// wpab_cb_log( '--------------------' );
-		// wpab_cb_log( 'Checking for translations...' );
-		// wpab_cb_log( 'Script Handle: ' . WPAB_CB_PLUGIN_NAME );
-		// wpab_cb_log( 'Text Domain: ' . 'campaignbay' );
-		// wpab_cb_log( 'Full Path Being Checked: ' . $path_to_check );
-		// wpab_cb_log( 'Does path exist? ' . ( file_exists( $path_to_check ) ? 'Yes' : 'No' ) );
+		$path_to_check = CAMPAIGNBAY_PATH . 'languages';
+		// campaignbay_log( '--------------------' );
+		// campaignbay_log( 'Checking for translations...' );
+		// campaignbay_log( 'Script Handle: ' . CAMPAIGNBAY_PLUGIN_NAME );
+		// campaignbay_log( 'Text Domain: ' . 'campaignbay' );
+		// campaignbay_log( 'Full Path Being Checked: ' . $path_to_check );
+		// campaignbay_log( 'Does path exist? ' . ( file_exists( $path_to_check ) ? 'Yes' : 'No' ) );
 		// wasted 3 hours on this because of poor documentation, there was no issue here
 		// // --- END OF DEBUGGING BLOCK ---
 	
 		$result = wp_set_script_translations(
-			WPAB_CB_PLUGIN_NAME,
+			CAMPAIGNBAY_PLUGIN_NAME,
 			'campaignbay',
 			$path_to_check
 		);
 		
 		// Log the result of the function call
-		// wpab_cb_log( 'Result of wp_set_script_translations: ' . ( $result ? 'True (Success)' : 'False (Failure)' ) );
+		// campaignbay_log( 'Result of wp_set_script_translations: ' . ( $result ? 'True (Success)' : 'False (Failure)' ) );
 
 	}
 
@@ -256,9 +256,9 @@ class Admin {
 	private function enqueue_global_admin_styles() {
 		wp_enqueue_style(
 			'wpab-cb-admin-menu', // A new, unique handle
-			WPAB_CB_URL . 'assets/css/admin-menu.css',
+			CAMPAIGNBAY_URL . 'assets/css/admin-menu.css',
 			array(),
-			WPAB_CB_VERSION
+			CAMPAIGNBAY_VERSION
 		);
 	}
 
@@ -273,7 +273,7 @@ class Admin {
 	 */
 	public function get_settings_schema() {
 		$setting_properties = apply_filters(
-			WPAB_CB_OPTION_NAME  . '_options_properties',
+			CAMPAIGNBAY_OPTION_NAME  . '_options_properties',
 			array(
 				/*==================================================
 				* Global Settings Tab
@@ -463,11 +463,11 @@ class Admin {
 	 * @return void
 	 */
 	public function register_settings() {
-		$defaults = wpab_cb_default_options();
+		$defaults = campaignbay_default_options();
 
 		register_setting(
-			WPAB_CB_OPTION_NAME  . '_settings_group',
-			WPAB_CB_OPTION_NAME,
+			CAMPAIGNBAY_OPTION_NAME  . '_settings_group',
+			CAMPAIGNBAY_OPTION_NAME,
 			array(
 				'type'         => 'object',
 				'default'      => $defaults,
