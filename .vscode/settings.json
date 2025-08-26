@@ -1,0 +1,13 @@
+{
+    "files.autoSave": "onWindowChange",
+    "editor.linkedEditing": true,
+    "editor.tabSize": 4,
+    "editor.detectIndentation": false,
+    "editor.formatOnSave": true,
+    "window.title": "${activeEditorLong}${separator}${rootName}",
+    "phpsab.standard": "WordPress",
+    "phpsab.snifferEnable": true, // disable this if you don't need suggestions
+    "phpsab.executablePathCBF": "~/Documents/WordPress-Coding-Standards/vendor/squizlabs/php_codesniffer/bin/phpcbf",
+    "phpsab.executablePathCS": "~/Documents/WordPress-Coding-Standards/vendor/squizlabs/php_codesniffer/bin/phpcs",
+    "phpsab.snifferShowSources": true
+}
