@@ -188,7 +188,7 @@ class Admin
 			return;
 		}
 
-		$deps_file = CAMPAIGNBAY_PATH . 'build/admin.asset.php';
+		$deps_file = CAMPAIGNBAY_PATH . 'build/legacy/admin.asset.php';
 		$dependency = array('wp-i18n');
 		$version = CAMPAIGNBAY_VERSION;
 
@@ -199,7 +199,7 @@ class Admin
 		}
 
 		error_log(print_r($dependency, true));
-		$js_loaded = wp_enqueue_script(CAMPAIGNBAY_PLUGIN_NAME, CAMPAIGNBAY_URL . 'build/legacy/admin.js', array(), $version, true);
+		$js_loaded = wp_enqueue_script(CAMPAIGNBAY_PLUGIN_NAME, CAMPAIGNBAY_URL . 'build/legacy/admin.js', $dependency, $version, true);
 
 		$css_loaded = wp_enqueue_style(CAMPAIGNBAY_PLUGIN_NAME, CAMPAIGNBAY_URL . 'build/legacy/admin.css', array('wp-components'), $version);
 

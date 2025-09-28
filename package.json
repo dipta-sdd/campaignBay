@@ -17,7 +17,6 @@
   "license": "GPLv2 or later",
   "devDependencies": {
     "@wordpress/babel-plugin-makepot": "^6.26.0",
-    "@wordpress/scripts": "^30.19.0",
     "autoprefixer": "^10.4.21",
     "browser-sync": "^3.0.4",
     "cross-env": "^10.0.0",
@@ -27,6 +26,7 @@
     "webpack-bundle-analyzer": "^4.10.2"
   },
   "dependencies": {
+    "@wordpress/scripts": "^30.19.0",
     "@wordpress/dataviews": "^4.22.0",
     "@wordpress/date": "^5.28.0",
     "@wordpress/i18n": "^5.26.0",
