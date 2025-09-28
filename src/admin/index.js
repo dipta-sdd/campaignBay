@@ -1,9 +1,14 @@
 import App from "./App";
 import "./styles/index.scss";
 import domReady from "@wordpress/dom-ready";
-import { createRoot } from "@wordpress/element";
+import React from "react";
+import { createRoot } from "react-dom/client";
+console.log("React version:", React.version);
 
 domReady(() => {
-  const root = createRoot(document.getElementById("campaignbay"));
-  root.render(<App />);
+  const el = document.getElementById("campaignbay");
+  if (el) {
+    const root = createRoot(el);
+    root.render(<App />);
+  }
 });

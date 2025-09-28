@@ -199,12 +199,12 @@ class Admin
 		}
 
 		error_log(print_r($dependency, true));
-		$js_loaded = wp_enqueue_script(CAMPAIGNBAY_PLUGIN_NAME, CAMPAIGNBAY_URL . 'build/admin.js', $dependency, $version, true);
+		$js_loaded = wp_enqueue_script(CAMPAIGNBAY_PLUGIN_NAME, CAMPAIGNBAY_URL . 'build/legacy/admin.js', array(), $version, true);
 
-		$css_loaded = wp_enqueue_style(CAMPAIGNBAY_PLUGIN_NAME, CAMPAIGNBAY_URL . 'build/admin.css', array('wp-components'), $version);
+		$css_loaded = wp_enqueue_style(CAMPAIGNBAY_PLUGIN_NAME, CAMPAIGNBAY_URL . 'build/legacy/admin.css', array('wp-components'), $version);
 
 		error_log('css loaded' . $css_loaded ? 'true' : 'false');
-		error_log('js loaded' . $js_loaded ? 'true -- ' . CAMPAIGNBAY_URL . 'build/admin.js' : 'false -- ' . CAMPAIGNBAY_URL . 'build/admin.css');
+		error_log('js loaded' . $js_loaded ? 'true -- ' . CAMPAIGNBAY_URL . 'build/legacy/admin.js' : 'false -- ' . CAMPAIGNBAY_URL . 'build/admin.css');
 
 		wp_style_add_data(CAMPAIGNBAY_PLUGIN_NAME, 'rtl', 'replace');
 		$woocommerce_currency_symbol = get_woocommerce_currency_symbol();
